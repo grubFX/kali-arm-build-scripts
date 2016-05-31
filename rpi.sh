@@ -45,7 +45,7 @@ fi
 
 # Set this to use an http proxy, like apt-cacher-ng, and uncomment further down
 # to unset it.
-#export http_proxy="http://localhost:3142/"
+export http_proxy="http://localhost:3142/"
 
 mkdir -p ${basedir}
 cd ${basedir}
@@ -124,7 +124,7 @@ apt-get --yes --force-yes dist-upgrade
 apt-get --yes --force-yes autoremove
 
 # clone git repo containing various scripts for startup modes
-git clone http://github.com/grubfx/custom-kali-odroid kali-$architecture/root/git
+git clone http://github.com/grubfx/hackberry.git kali-$architecture/root/git
 cd kali-$architecture/root/git
 mkdir kali-$architecture/root/.hackberry
 cp set-mode.sh kali-$architecture/etc/profile.d
@@ -205,7 +205,7 @@ deb-src http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
 # Uncomment this if you use apt-cacher-ng otherwise git clones will fail.
-#unset http_proxy
+unset http_proxy
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section.
