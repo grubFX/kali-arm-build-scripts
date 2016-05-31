@@ -21,17 +21,16 @@ basedir=`pwd`/rpi-$1
 
 arm="abootimg cgpt fake-hwclock ntpdate vboot-utils vboot-kernel-utils u-boot-tools"
 base="kali-menu kali-defaults initramfs-tools sudo parted e2fsprogs usbutils"
-desktop="fonts-croscore fonts-crosextra-caladea fonts-crosextra-carlito gnome-theme-kali kali-desktop-xfce kali-root-login gtk3-engines-xfce lightdm network-manager network-manager-gnome xfce4 xserver-xorg-video-fbdev"
 tools="passing-the-hash winexe aircrack-ng hydra john sqlmap wireshark libnfc-bin mfoc nmap ethtool usbutils"
 services="openssh-server apache2"
-extras="iceweasel xfce4-terminal wpasupplicant"
+extras="htop rfkill reaver tshark pyrit"
 # kernel sauces take up space
-size=7000 # Size of image in megabytes
+size=4000 # Size of image in megabytes
 
 # Git commit hash to check out for the kernel
 kernel_commit=20fe468
 
-packages="${arm} ${base} ${desktop} ${tools} ${services} ${extras}"
+packages="${arm} ${base} ${tools} ${services} ${extras}"
 architecture="armel"
 # If you have your own preferred mirrors, set them here.
 # After generating the rootfs, we set the sources.list to the default settings.
@@ -62,7 +61,7 @@ deb http://$mirror/kali kali-rolling main contrib non-free
 EOF
 
 # Set hostname
-echo "kali" > kali-$architecture/etc/hostname
+echo "customkali" > kali-$architecture/etc/hostname
 
 # So X doesn't complain, we add kali to hosts
 cat << EOF > kali-$architecture/etc/hosts
@@ -84,6 +83,8 @@ EOF
 
 cat << EOF > kali-$architecture/etc/resolv.conf
 nameserver 8.8.8.8
+nameserver 8.8.4.4
+nameserver 4.2.2.4
 EOF
 
 export MALLOC_CHECK_=0 # workaround for LP: #520465
@@ -122,9 +123,18 @@ apt-get --yes --force-yes install $packages
 apt-get --yes --force-yes dist-upgrade
 apt-get --yes --force-yes autoremove
 
+# clone git repo containing various scripts for startup modes
+git clone http://github.com/grubfx/custom-kali-odroid kali-$architecture/root/git
+cd kali-$architecture/root/git
+mkdir kali-$architecture/root/.hackberry
+cp set-mode.sh kali-$architecture/etc/profile.d
+cp setup-hackberry kali-$architecture/bin/
+cp recon kali-$architecture/etc/init.d
+update-rc.d recon default
+rm -r kali-$architecture/root/git
+
 # Because copying in authorized_keys is hard for people to do, let's make the
 # image insecure and enable root login with a password.
-
 echo "Making the image insecure"
 sed -i -e 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
@@ -270,18 +280,3 @@ losetup -d $loopdevice
 # wrong.
 echo "Cleaning up the temporary build files..."
 rm -rf ${basedir}/kernel ${basedir}/bootp ${basedir}/root ${basedir}/kali-$architecture ${basedir}/boot ${basedir}/tools ${basedir}/patches
-
-# If you're building an image for yourself, comment all of this out, as you
-# don't need the sha1sum or to compress the image, since you will be testing it
-# soon.
-echo "Generating sha1sum for kali-$1-rpi.img"
-sha1sum kali-$1-rpi.img > ${basedir}/kali-$1-rpi.img.sha1sum
-# Don't pixz on 32bit, there isn't enough memory to compress the images.
-MACHINE_TYPE=`uname -m`
-if [ ${MACHINE_TYPE} == 'x86_64' ]; then
-echo "Compressing kali-$1-rpi.img"
-pixz ${basedir}/kali-$1-rpi.img ${basedir}/kali-$1-rpi.img.xz
-rm ${basedir}/kali-$1-rpi.img
-echo "Generating sha1sum for kali-$1-rpi.img.xz"
-sha1sum kali-$1-rpi.img.xz > ${basedir}/kali-$1-rpi.img.xz.sha1sum
-fi
