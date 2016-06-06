@@ -28,7 +28,7 @@ extras="htop rfkill reaver tshark pyrit"
 size=4000 # Size of image in megabytes
 
 # Git commit hash to check out for the kernel
-kernel_commit=20fe468
+kernel_commit=05b3446
 
 packages="${arm} ${base} ${tools} ${services} ${extras}"
 architecture="armel"
@@ -124,7 +124,7 @@ apt-get --yes --force-yes dist-upgrade
 apt-get --yes --force-yes autoremove
 
 # clone git repo containing various scripts for startup modes
-git clone http://github.com/grubfx/hackberry.git kali-$architecture/root/git
+git clone https://github.com/grubfx/hackberry.git kali-$architecture/root/git
 cd kali-$architecture/root/git
 mkdir kali-$architecture/root/.hackberry
 cp set-mode.sh kali-$architecture/etc/profile.d
