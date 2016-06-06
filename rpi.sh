@@ -209,18 +209,18 @@ unset http_proxy
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section.
-git clone --depth 1 https://github.com/raspberrypi/linux -b rpi-4.1.y ${basedir}/root/usr/src/kernel
+git clone --depth 1 https://github.com/raspberrypi/linux -b rpi-4.4.y ${basedir}/root/usr/src/kernel
 git clone --depth 1 https://github.com/raspberrypi/tools ${basedir}/tools
 
 cd ${basedir}/root/usr/src/kernel
 git checkout $kernel_commit
 echo $kernel_commit > ../kernel-at-commit
-patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/kali-wifi-injection-4.1.patch
+patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/kali-wifi-injection-4.4.patch
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=${basedir}/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-
-cp ${basedir}/../kernel-configs/rpi-4.1.config .config
-cp ${basedir}/../kernel-configs/rpi-4.1.config ../rpi-4.1.config
+cp ${basedir}/../kernel-configs/rpi-4.4.config .config
+cp ${basedir}/../kernel-configs/rpi-4.4.config ../rpi-4.4.config
 make -j $(grep -c processor /proc/cpuinfo)
 make modules_install INSTALL_MOD_PATH=${basedir}/root
 git clone --depth 1 https://github.com/raspberrypi/firmware.git rpi-firmware
@@ -239,7 +239,7 @@ rm -rf ${basedir}/root/lib/firmware/.git
 cd ${basedir}/root/usr/src/kernel
 make INSTALL_MOD_PATH=${basedir}/root firmware_install
 make mrproper
-cp ../rpi-4.1.config .config
+cp ../rpi-4.4.config .config
 make modules_prepare
 cd ${basedir}
 
