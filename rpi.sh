@@ -28,7 +28,7 @@ extras="htop rfkill reaver tshark pyrit"
 size=7000 # Size of image in megabytes
 
 # Git commit hash to check out for the kernel
-kernel_commit=05b3446
+kernel_commit=20fe468
 
 packages="${arm} ${base} ${tools} ${services} ${extras}"
 architecture="armel"
