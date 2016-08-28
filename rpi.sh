@@ -28,7 +28,7 @@ extras="htop rfkill reaver tshark pyrit"
 size=7000 # Size of image in megabytes
 
 # Git commit hash to check out for the kernel
-kernel_commit=20fe468
+kernel_commit=05b3446
 
 packages="${arm} ${base} ${tools} ${services} ${extras}"
 architecture="armel"
@@ -123,6 +123,19 @@ apt-get --yes --force-yes install $packages
 apt-get --yes --force-yes dist-upgrade
 apt-get --yes --force-yes autoremove
 
+<<<<<<< HEAD
+=======
+# clone git repo containing various scripts for startup modes
+git clone https://github.com/grubfx/hackberry.git kali-$architecture/root/git
+cd kali-$architecture/root/git
+mkdir kali-$architecture/root/.hackberry
+cp set-mode.sh kali-$architecture/etc/profile.d
+cp setup-hackberry kali-$architecture/bin/
+cp recon kali-$architecture/etc/init.d
+update-rc.d recon default
+rm -r kali-$architecture/root/git
+
+>>>>>>> 28753156d4bff44262bf738ad53aa1fe0f44876c
 # Because copying in authorized_keys is hard for people to do, let's make the
 # image insecure and enable root login with a password.
 echo "Making the image insecure"
