@@ -25,10 +25,10 @@ tools="passing-the-hash winexe aircrack-ng hydra john sqlmap wireshark libnfc-bi
 services="openssh-server apache2"
 extras="htop rfkill reaver tshark pyrit"
 # kernel sauces take up space
-size=4000 # Size of image in megabytes
+size=7000 # Size of image in megabytes
 
 # Git commit hash to check out for the kernel
-kernel_commit=05b3446 
+kernel_commit=20fe468
 
 packages="${arm} ${base} ${tools} ${services} ${extras}"
 architecture="armel"
@@ -45,7 +45,7 @@ fi
 
 # Set this to use an http proxy, like apt-cacher-ng, and uncomment further down
 # to unset it.
-export http_proxy="http://localhost:3142/"
+#export http_proxy="http://<url>:<port>/"
 
 mkdir -p ${basedir}
 cd ${basedir}
@@ -123,16 +123,6 @@ apt-get --yes --force-yes install $packages
 apt-get --yes --force-yes dist-upgrade
 apt-get --yes --force-yes autoremove
 
-# clone git repo containing various scripts for startup modes
-git clone https://github.com/grubFX/hackberry.git kali-$architecture/root/git
-cd kali-$architecture/root/git
-mkdir kali-$architecture/root/.hackberry
-cp set-mode.sh kali-$architecture/etc/profile.d
-cp setup-hackberry kali-$architecture/bin/
-cp recon kali-$architecture/etc/init.d
-update-rc.d recon default
-rm -r kali-$architecture/root/git
-
 # Because copying in authorized_keys is hard for people to do, let's make the
 # image insecure and enable root login with a password.
 echo "Making the image insecure"
@@ -204,23 +194,34 @@ deb http://http.kali.org/kali kali-rolling main non-free contrib
 deb-src http://http.kali.org/kali kali-rolling main non-free contrib
 EOF
 
+# clone git repo containing various scripts for startup modes
+mkdir ${basedir}/root/root/.hackberry
+git clone http://github.com/grubfx/hackberry.git ${basedir}/root/root/git
+cd ${basedir}/root/root/git
+cp set-mode.sh ${basedir}/root/etc/profile.d
+chmod +x ${basedir}/root/etc/profile.d/set-mode.sh
+cp setup-hackberry ${basedir}/root/bin/
+cp recon ${basedir}/etc/init.d
+update-rc.d recon default
+rm -r ${basedir}/root/root/git
+
 # Uncomment this if you use apt-cacher-ng otherwise git clones will fail.
-unset http_proxy
+#unset http_proxy
 
 # Kernel section. If you want to use a custom kernel, or configuration, replace
 # them in this section.
-git clone --depth 1 https://github.com/raspberrypi/linux -b rpi-4.4.y ${basedir}/root/usr/src/kernel
+git clone --depth 1 https://github.com/raspberrypi/linux -b rpi-4.1.y ${basedir}/root/usr/src/kernel
 git clone --depth 1 https://github.com/raspberrypi/tools ${basedir}/tools
 
 cd ${basedir}/root/usr/src/kernel
 git checkout $kernel_commit
 echo $kernel_commit > ../kernel-at-commit
-patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/kali-wifi-injection-4.4.patch
+patch -p1 --no-backup-if-mismatch < ${basedir}/../patches/kali-wifi-injection-4.1.patch
 touch .scmversion
 export ARCH=arm
 export CROSS_COMPILE=${basedir}/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-
-cp ${basedir}/../kernel-configs/rpi-4.4.config .config
-cp ${basedir}/../kernel-configs/rpi-4.4.config ../rpi-4.4.config
+cp ${basedir}/../kernel-configs/rpi-4.1.config .config
+cp ${basedir}/../kernel-configs/rpi-4.1.config ../rpi-4.1.config
 make -j $(grep -c processor /proc/cpuinfo)
 make modules_install INSTALL_MOD_PATH=${basedir}/root
 git clone --depth 1 https://github.com/raspberrypi/firmware.git rpi-firmware
@@ -278,5 +279,5 @@ losetup -d $loopdevice
 # Clean up all the temporary build stuff and remove the directories.
 # Comment this out to keep things around if you want to see what may have gone
 # wrong.
-echo "Cleaning up the temporary build files..."
-rm -rf ${basedir}/kernel ${basedir}/bootp ${basedir}/root ${basedir}/kali-$architecture ${basedir}/boot ${basedir}/tools ${basedir}/patches
+#echo "Cleaning up the temporary build files..."
+#rm -rf ${basedir}/kernel ${basedir}/bootp ${basedir}/root ${basedir}/kali-$architecture ${basedir}/boot ${basedir}/tools ${basedir}/patches
